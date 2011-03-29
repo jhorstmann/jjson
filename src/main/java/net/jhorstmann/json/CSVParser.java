@@ -18,6 +18,8 @@ public class CSVParser extends AbstractParser {
 
     public CSVParser(Reader reader, char delimiter, boolean parseNumbers) {
         super(reader);
+        this.delimiter = delimiter;
+        this.parseNumbers = parseNumbers;
     }
 
     public CSVParser(Reader reader) {
@@ -89,6 +91,31 @@ public class CSVParser extends AbstractParser {
         }
         return sb.toString();
     }
+    
+    private void skipOptionalWhitespace(int ch) throws IOException {
+        while (ch == '\t' || ch == ' ') {
+            next();
+            ch = peek();
+        }
+    }
+
+    private Object parseValue(int ch, boolean parseNumbers) throws IOException {
+        skipOptionalWhitespace(ch);
+        Object res;
+        if (ch == '"' || ch == '\'') {
+            res = parseString(ch);
+            int ch2 = peek();
+            skipOptionalWhitespace(ch2);
+        } else if (parseNumbers && isNumberStart(ch)) {
+            res = parseSignedDecimal(ch);
+            int ch2 = peek();
+            skipOptionalWhitespace(ch2);
+        } else {
+            String str = parseBareString(ch).trim();
+            res = str.length() == 0 ? null : str;
+        }
+        return res;
+    }
 
     private List<Object> parseLine(boolean parseNumbers) throws IOException {
         List<Object> result = new LinkedList<Object>();
@@ -109,13 +136,8 @@ public class CSVParser extends AbstractParser {
                 next();
             } else if (ch == delimiter) {
                 next();
-            } else if (ch == '"' || ch == '\'') {
-                result.add(parseString(ch));
-            } else if (parseNumbers && isNumberStart(ch)) {
-                result.add(parseSignedDecimal(ch));
             } else {
-                String str = parseBareString(ch).trim();
-                result.add(str.length() == 0 ? null : str);
+                result.add(parseValue(ch, parseNumbers));
             }
         }
         return result;
