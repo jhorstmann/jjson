@@ -9,8 +9,8 @@ class ArrayIterable implements Iterable {
     private int length;
 
     ArrayIterable(Object array) {
-        ArrayIterable.this.length = Array.getLength(array);
-        ArrayIterable.this.array = array;
+        this.length = Array.getLength(array);
+        this.array = array;
     }
 
     public Iterator<Object> iterator() {
