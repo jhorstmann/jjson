@@ -182,6 +182,12 @@ public class JSONParserTest {
         parser.setParseBigDecimal(true);
         return parser;
     }
+    
+    private static void assertPropertyX(Object expected, Object obj) {
+        assertTrue("Value should be a JSON object", obj instanceof Map);
+        Object value = ((Map)obj).get("x");
+        assertEquals(expected, value);
+    }
 
     @Test
     public void testBigDecimal() throws IOException {
@@ -196,6 +202,21 @@ public class JSONParserTest {
         assertEquals(BigDecimal.valueOf(-25, 1), createBigDecimalParser("-0.25e1").parse());
         assertEquals(BigDecimal.valueOf(25, 1), createBigDecimalParser("25e-1").parse());
         assertEquals(BigDecimal.valueOf(-25, 1), createBigDecimalParser("-25e-1").parse());
+    }
+
+    @Test
+    public void testBigDecimalInObject() throws IOException {
+        assertPropertyX(new BigDecimal(123L), createBigDecimalParser("{'x': 123}").parse());
+        assertPropertyX(BigDecimal.ZERO, createBigDecimalParser("{'x': 0}").parse());
+        assertPropertyX(BigDecimal.valueOf(0, 1), createBigDecimalParser("{'x': 0.0}").parse());
+        assertPropertyX(BigDecimal.valueOf(5, 1), createBigDecimalParser("{'x': 0.5}").parse());
+        assertPropertyX(BigDecimal.valueOf(25, 2), createBigDecimalParser("{'x': 0.25}").parse());
+        assertPropertyX(BigDecimal.valueOf(-5, 1), createBigDecimalParser("{'x': -0.5}").parse());
+        assertPropertyX(BigDecimal.valueOf(-25, 2), createBigDecimalParser("{'x': -0.25}").parse());
+        assertPropertyX(BigDecimal.valueOf(25, 1), createBigDecimalParser("{'x': 0.25e1}").parse());
+        assertPropertyX(BigDecimal.valueOf(-25, 1), createBigDecimalParser("{'x': -0.25e1}").parse());
+        assertPropertyX(BigDecimal.valueOf(25, 1), createBigDecimalParser("{'x': 25e-1}").parse());
+        assertPropertyX(BigDecimal.valueOf(-25, 1), createBigDecimalParser("{'x': -25e-1}").parse());
     }
 
     @Test

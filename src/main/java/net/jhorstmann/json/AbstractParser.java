@@ -149,7 +149,7 @@ public abstract class AbstractParser {
 
     protected final BigInteger parseBigInteger(int ch) throws IOException {
         StringBuffer sb = new StringBuffer();
-        parseSignedNumber(sb, ch);
+        parseNumber(sb, ch);
         return new BigInteger(sb.toString(), 10);
     }
     
@@ -159,13 +159,13 @@ public abstract class AbstractParser {
 
     protected final BigDecimal parseBigDecimal(int ch) throws IOException {
         StringBuffer sb = new StringBuffer();
-        parseSignedNumber(sb, ch);
+        parseNumber(sb, ch);
         return new BigDecimal(sb.toString());
     }
 
     protected final Double parseDouble(int ch) throws IOException {
         StringBuffer sb = new StringBuffer();
-        parseSignedNumber(sb, ch);
+        parseNumber(sb, ch);
         return Double.valueOf(sb.toString());
     }
 
@@ -177,7 +177,7 @@ public abstract class AbstractParser {
 
     protected final Number parseSignedDecimal(int ch) throws IOException {
         StringBuffer sb = new StringBuffer();
-        parseSignedNumber(sb, ch);
+        parseNumber(sb, ch);
         return convertDecimal(sb);
     }
 
@@ -189,17 +189,6 @@ public abstract class AbstractParser {
             parseUnsignedNumber(sb, ch2);
         } else {
             parseUnsignedNumber(sb, ch);
-        }
-    }
-
-    private void parseSignedNumber(StringBuffer sb, int ch) throws IOException {
-        if (ch == '+' || ch == '-') {
-            next();
-            sb.append((char)ch);
-            int ch2 = peek();
-            parseUnsignedNumber(sb, ch2);
-        } else {
-            throw createSyntaxException(ch, "'+' or '-'");
         }
     }
 

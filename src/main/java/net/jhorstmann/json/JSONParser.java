@@ -151,42 +151,6 @@ public class JSONParser extends AbstractParser {
             }
         });
         return result;
-        /*
-        consume('{');
-        JSONObject result = new JSONObject();
-        int ch = peekToken();
-        if (ch == '}') {
-            consume();
-        } else {
-            while (true) {
-                if (ch == '"' || ch == '\'') {
-                    String str = parseStringImpl(ch);
-                    consumeToken(':');
-                    Object val = parseValue();
-
-                    result.put(str, val);
-
-                    ch = peekToken();
-
-                    if (ch == '}') {
-                        consume();
-                        break;
-                    }
-                    else if (ch == ',') {
-                        consume();
-                        ch = peekToken();
-                    }
-                    else {
-                        throw createSyntaxException(ch);
-                    }
-                }
-                else {
-                    throw createSyntaxException(ch);
-                }
-            }
-        }
-        return result;
-        */
     }
 
     public void parseObject(ObjectCallback cb) throws IOException {
@@ -237,26 +201,6 @@ public class JSONParser extends AbstractParser {
             }
         });
         return result;
-        /*
-        consume('[');
-        List result = new ArrayList();
-        int ch = peekToken();
-        if (ch == ']') {
-            consume();
-        } else {
-            while (true) {
-                result.add(parseValue());
-                int ch2 = peekToken();
-                if (ch2 == ']') {
-                    consume();
-                    break;
-                } else if (ch2 == ',') {
-                    consume();
-                }
-            }
-        }
-        return result;
-        */
     }
 
     public void parseArray(ArrayCallback cb) throws IOException {
@@ -293,7 +237,7 @@ public class JSONParser extends AbstractParser {
             case 'f': return ValueType.BOOLEAN;
             case '0': case '1': case '2': case '3': case '4':
             case '5': case '6': case '7': case '8': case '9':
-            case '-': return ValueType.NUMBER;
+            case '+': case '-': return ValueType.NUMBER;
             case '\'':
             case '"': return ValueType.STRING;
             case '{': return ValueType.OBJECT;
