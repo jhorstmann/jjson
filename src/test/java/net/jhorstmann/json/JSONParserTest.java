@@ -64,6 +64,17 @@ public class JSONParserTest {
     }
 
     @Test
+    public void testMapToNumber() throws IOException {
+        Map expected = Collections.singletonMap("a", Double.valueOf(3.0));
+        assertEquals(expected, new JSONParser("{'a':3}").parse());
+        assertEquals(expected, new JSONParser("{ 'a':3}").parse());
+        assertEquals(expected, new JSONParser("{'a' :3}").parse());
+        assertEquals(expected, new JSONParser("{'a': 3}").parse());
+        assertEquals(expected, new JSONParser("{'a':3 }").parse());
+        assertEquals(expected, new JSONParser("{ 'a' : 3 }").parse());
+    }
+    
+    @Test
     public void testMap2() throws IOException {
         Map expected = new HashMap();
         expected.put("abc", "def");

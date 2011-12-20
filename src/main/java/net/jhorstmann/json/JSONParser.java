@@ -74,7 +74,7 @@ public class JSONParser extends AbstractParser {
         }
     }
 
-    private Object parseValue() throws IOException {
+    public Object parseValue() throws IOException {
         int ch = peekToken();
         if (ch == '{') {
             return parseObjectImpl();
@@ -94,7 +94,7 @@ public class JSONParser extends AbstractParser {
             consume("false");
             return false;
         } else {
-            throw createSyntaxException(ch, "'true' or 'false'");
+            throw createSyntaxException(ch, "boolean literal");
         }
     }
 
@@ -178,7 +178,7 @@ public class JSONParser extends AbstractParser {
                         ch = peekToken();
                     }
                     else {
-                        throw createSyntaxException(ch);
+                        throw createSyntaxException(ch, "closing brace or comma");
                     }
                 }
                 else {

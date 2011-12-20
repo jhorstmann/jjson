@@ -297,20 +297,6 @@ public class JSONWriter  {
 
     private void writeArray(Object o, int level) throws IOException {
         writeList(new ArrayIterable(o), level);
-        /*
-        out.append('[');
-        newline();
-        for (int i=0, len=Array.getLength(o); i<len; i++) {
-            indent(level+1);
-            writeImpl(Array.get(o, i), level+1);
-            if (i < len-1) {
-                writeComma();
-            }
-            newline();
-        }
-        indent(level);
-        out.append(']');
-        */
     }
 
     public void writeArray(Object o) throws IOException {
