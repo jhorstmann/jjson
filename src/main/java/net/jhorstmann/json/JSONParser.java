@@ -12,10 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class JSONParser extends AbstractParser {
+    
     public enum ValueType {
         NULL, BOOLEAN, NUMBER, STRING, ARRAY, OBJECT
     }
-
+    
     public interface ArrayCallback {
         void item(JSONParser parser, int idx, ValueType type) throws IOException;
     }
@@ -23,6 +24,8 @@ public class JSONParser extends AbstractParser {
     public interface ObjectCallback {
         void property(JSONParser parser, String property, ValueType type) throws IOException;
     }
+
+    private boolean lenient;
 
     public JSONParser(String str) {
         this(new StringReader(str));
@@ -38,6 +41,14 @@ public class JSONParser extends AbstractParser {
 
     public JSONParser(CharSequence cs) {
         this(cs.toString());
+    }
+
+    public boolean isLenient() {
+        return lenient;
+    }
+
+    public void setLenient(boolean lenient) {
+        this.lenient = lenient;
     }
 
     public Object parse() throws IOException {
@@ -152,37 +163,106 @@ public class JSONParser extends AbstractParser {
         });
         return result;
     }
-
+    
+    private boolean isIdentifierStart(int ch) {
+        return ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch == '_' || ch == '$';
+    }
+    
+    private boolean isIdentifierPart(int ch) {
+        return isIdentifierStart(ch) || ch >= '0' && ch <= '9';
+    }
+    
+    private String parseIdentifier(int ch) throws IOException {
+        if (isIdentifierStart(ch)) {
+            consume();
+        } else {
+            throw createSyntaxException(ch);
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append((char)ch);
+        while (true) {
+            ch = peek();
+            if (isIdentifierPart(ch)) {
+                next();
+                sb.append((char)ch);
+            } else {
+                break;
+            }
+        }
+        return sb.toString();
+    }
+    
     public void parseObject(ObjectCallback cb) throws IOException {
         consume('{');
         int ch = peekToken();
         if (ch == '}') {
             consume();
         } else {
-            while (true) {
-                if (ch == '"' || ch == '\'') {
-                    String str = parseStringImpl(ch);
-                    consumeToken(':');
-
-                    ch = peekToken();
-                    ValueType type = nextItemType(ch);
-                    cb.property(this, str, type);
-
-                    ch = peekToken();
-                    if (ch == '}') {
-                        consume();
-                        break;
-                    }
-                    else if (ch == ',') {
-                        consume();
+            if (lenient) {
+                while (true) {
+                    if (ch == '"' || ch == '\'' || isIdentifierStart(ch)) {
+                        String str;
+                        if (ch == '"' || ch == '\'') {
+                            str = parseStringImpl(ch);
+                        } else {
+                            str = parseIdentifier(ch);
+                        }
+                        
                         ch = peekToken();
-                    }
-                    else {
-                        throw createSyntaxException(ch, "closing brace or comma");
+                        if (ch == ':') {
+                            consume();
+                        } else if (ch == '=') {
+                            next();
+                            ch = peek();
+                            if (ch == '>') {
+                                next();
+                            }
+                        }
+
+                        ch = peekToken();
+                        ValueType type = nextItemType(ch);
+                        cb.property(this, str, type);
+
+                        ch = peekToken();
+                        if (ch == '}') {
+                            consume();
+                            break;
+                        }
+                        else if (ch == ',' || ch == ';') {
+                            consume();
+                            ch = peekToken();
+                        }
+                        else {
+                            throw createSyntaxException(ch, "closing brace or comma");
+                        }
                     }
                 }
-                else {
-                    throw createSyntaxException(ch, "quote");
+            } else {
+                while (true) {
+                    if (ch == '"' || ch == '\'') {
+                        String str = parseStringImpl(ch);
+                        consumeToken(':');
+
+                        ch = peekToken();
+                        ValueType type = nextItemType(ch);
+                        cb.property(this, str, type);
+
+                        ch = peekToken();
+                        if (ch == '}') {
+                            consume();
+                            break;
+                        }
+                        else if (ch == ',') {
+                            consume();
+                            ch = peekToken();
+                        }
+                        else {
+                            throw createSyntaxException(ch, "closing brace or comma");
+                        }
+                    }
+                    else {
+                        throw createSyntaxException(ch, "quote");
+                    }
                 }
             }
         }

@@ -256,4 +256,15 @@ public class JSONParserTest {
 
         assertEquals(date, new JSONParser(json).parseObject().getDate("date"));
     }
+    
+    @Test
+    public void testLenientParser() throws IOException {
+        JSONParser parser = new JSONParser("{abc = 1; def => 'xyz', ghi: true}");
+        parser.setLenient(true);
+        JSONObject obj = parser.parseObject();
+        assertEquals(3, obj.size());
+        assertEquals(1, obj.getInt("abc"));
+        assertEquals("xyz", obj.get("def"));
+        assertEquals(Boolean.TRUE, obj.get("ghi"));
+    }
 }
