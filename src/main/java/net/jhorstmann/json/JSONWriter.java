@@ -1,9 +1,5 @@
 package net.jhorstmann.json;
 
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.io.Flushable;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -18,7 +14,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TimeZone;
-import java.util.TreeMap;
 
 public class JSONWriter  {
     private Appendable out;
@@ -130,62 +125,8 @@ public class JSONWriter  {
         }
     }
 
-    static void writeChar(char ch, Appendable out) throws IOException {
-        switch (ch) {
-            case '\b': out.append("\\b"); break;
-            case '\f': out.append("\\f"); break;
-            case '\n': out.append("\\n"); break;
-            case '\r': out.append("\\r"); break;
-            case '\t': out.append("\\t"); break;
-            case '"' : out.append("\\\""); break;
-            case '\\': out.append("\\\\"); break;
-            default:
-                if (ch < 32 || ch >= 127) {
-                    String tmp = Integer.toHexString(ch);
-                    out.append("\\u");
-                    for (int j=tmp.length(); j<4; j++) {
-                        out.append('0');
-                    }
-                    out.append(tmp);
-                }
-                else {
-                    out.append(ch);
-                }
-        }
-    }
-
-    static void writeString(CharSequence s, Appendable out) throws IOException {
-        out.append('"');
-        for (int i=0, len=s.length(); i<len; i++) {
-            char ch = s.charAt(i);
-            writeChar(ch, out);
-        }
-
-        out.append('"');
-    }
-
-    static String escapeChar(char ch) {
-        try {
-            StringBuilder sb = new StringBuilder(6);
-            writeChar(ch, sb);
-            return sb.toString();
-        } catch (IOException ex) {
-            throw new IllegalStateException("Appending to a StringBuilder threw an IOException", ex);
-        }
-    }
-
-    static String escapeString(CharSequence s) {
-        try {
-            StringBuilder sb = new StringBuilder(s.length()+16);
-            writeString(s, sb);
-            return sb.toString();
-        } catch (IOException ex) {
-            throw new IllegalStateException("Appending to a StringBuilder threw an IOException", ex);
-        }
-    }
-
     public void writeString(CharSequence s) throws IOException {
-        writeString(s, out);
+        JSONUtils.writeString(s, out);
     }
 
     private void writeComma() throws IOException {
@@ -224,25 +165,6 @@ public class JSONWriter  {
         writeMap(m, 0);
     }
 
-    static Map<String, Method> getProperties(Object o) throws JSONReflectionException {
-        try {
-            BeanInfo beanInfo = Introspector.getBeanInfo(o.getClass());
-            PropertyDescriptor[] properties = beanInfo.getPropertyDescriptors();
-            Map<String, Method> result = new TreeMap<String, Method>();
-            for (int i=0, len=properties.length; i<len; i++) {
-                String name = properties[i].getName();
-                Method read = properties[i].getReadMethod();
-                // Filter Object#getClass()
-                if (read != null && read.getDeclaringClass() != Object.class) {
-                    result.put(name, read);
-                }
-            }
-            return result;
-        } catch (IntrospectionException ex) {
-            throw new JSONReflectionException(ex);
-        }
-    }
-    
     private void writeProperty(Object o, String name, Method m, int level) throws IOException {
         try {
             Object val = m.invoke(o);
@@ -257,7 +179,7 @@ public class JSONWriter  {
     }
 
     private void writeBean(Object o, int level) throws IOException {
-        Map<String, Method> properties = getProperties(o);
+        Map<String, Method> properties = JSONUtils.getProperties(o);
         out.append('{');
         newline();
         for (Iterator<Map.Entry<String, Method>> it = properties.entrySet().iterator(); it.hasNext(); ) {

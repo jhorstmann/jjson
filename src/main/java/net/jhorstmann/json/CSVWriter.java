@@ -124,7 +124,7 @@ public class CSVWriter {
     }
 
     private void writeBean(Object o, String[] properties) throws IOException {
-        Map<String, Method> beanProperties = JSONWriter.getProperties(o);
+        Map<String, Method> beanProperties = JSONUtils.getProperties(o);
         for (int i = 0, len = properties.length; i < len; i++) {
             String name = properties[i];
             Method method = beanProperties.get(name);

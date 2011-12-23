@@ -7,6 +7,7 @@ import net.jhorstmann.json.JSONParser;
 import net.jhorstmann.json.JSONParser.ArrayCallback;
 import net.jhorstmann.json.JSONParser.ObjectCallback;
 import net.jhorstmann.json.JSONParser.ValueType;
+import net.jhorstmann.json.JSONUtils;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
@@ -15,13 +16,12 @@ import org.xml.sax.helpers.AttributesImpl;
 /**
  * XMLReader implementation that reports JSON data according to the format defined at http://xml.calldei.com/JsonXML
  */
-public class JXMLReader extends  AbstractXMLReader {
+public class JXMLReader extends AbstractXMLReader {
 
     public static final String PROPERTY_ESCAPE_STRINGS = "http://net.jhorstmann/jjson/property/escape-strings";
 
     private final ObjectCallback objectCallback;
     private final ArrayCallback arrayCallback;
-    private boolean parseBigDecimal;
     private boolean escapeStrings;
 
     public JXMLReader() {
@@ -55,26 +55,37 @@ public class JXMLReader extends  AbstractXMLReader {
 
     public void parse(Reader reader) throws IOException, SAXException {
         JSONParser parser = new JSONParser(reader);
-        parser.setParseBigDecimal(parseBigDecimal);
         try {
             contentHandler.startDocument();
-            
-            if (!parser.isObject()) {
-                throw new SAXException("Not a JSON Object");
-            }
 
-            contentHandler.startElement("", "object", "object", EMPTY_ATTRIBUTES);
-
-            try {
+            if (parser.isObject()) {
+                contentHandler.startElement("", "object", "object", EMPTY_ATTRIBUTES);
                 parser.parseObject(objectCallback);
-            } catch (WrappedSaxException ex) {
-                throw ex.getSAXException();
+                contentHandler.endElement("", "object", "object");
+            } else if (parser.isArray()) {
+                contentHandler.startElement("", "array", "array", EMPTY_ATTRIBUTES);
+                parser.parseArray(arrayCallback);
+                contentHandler.endElement("", "array", "array");
+            } else {
+                throw new SAXException("Not a JSON object or array");
             }
-            contentHandler.endElement("", "object", "object");
+
             contentHandler.endDocument();
+        } catch (WrappedSaxException ex) {
+            throw ex.getSAXException();
         } finally {
             reader.close();
         }
+    }
+    
+    private boolean needsEscaping(CharSequence str) {
+        for (int i=0, len=str.length(); i<len; i++) {
+            int ch = str.charAt(i);
+            if (ch <= 0x08 || (ch >= 0x0B && ch <= 0x1F)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     void handleValue(JSONParser parser, ValueType type) throws SAXException, IOException {
@@ -94,7 +105,12 @@ public class JXMLReader extends  AbstractXMLReader {
                 parser.parseObject(objectCallback);
                 break;
             case STRING:
-                content = parser.parseString().toCharArray();
+                String str = parser.parseString();
+                if (escapeStrings && needsEscaping(str)) {
+                    content = JSONUtils.escapeStringContent(str).toCharArray();
+                } else {
+                    content = str.toCharArray();
+                }
                 contentHandler.characters(content, 0, content.length);
                 break;
             case BOOLEAN:
@@ -134,7 +150,7 @@ public class JXMLReader extends  AbstractXMLReader {
             try {
                 AttributesImpl attr = new AttributesImpl();
                 attr.addAttribute("", "name", "name", "CDATA", property);
-                
+
                 reader.getContentHandler().startElement("", "member", "member", attr);
                 reader.handleValue(parser, type);
                 reader.getContentHandler().endElement("", "member", "member");

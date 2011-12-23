@@ -128,7 +128,7 @@ public abstract class AbstractParser {
     }
 
     protected static String charName(int ch) {
-        return ch == -1 ? "EOF" : ("'" + JSONWriter.escapeChar((char)ch) + "'");
+        return ch == -1 ? "EOF" : ("'" + JSONUtils.escapeChar((char)ch) + "'");
     }
 
     protected final JSONSyntaxException createSyntaxException(int ch, int expected) {

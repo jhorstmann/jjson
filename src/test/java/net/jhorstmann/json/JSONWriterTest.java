@@ -197,12 +197,4 @@ public class JSONWriterTest {
         
         System.out.println(JSONWriter.format(map1, true));
     }
-
-    @Test
-    public void testEscapeString() throws IOException {
-        assertEquals("\"\\u0001\"", JSONWriter.escapeString("\001"));
-        assertEquals("\"\\\"\"", JSONWriter.escapeString("\""));
-        assertEquals("\"\\r\\n\"", JSONWriter.escapeString("\r\n"));
-        assertEquals("\"\\f\"", JSONWriter.escapeString("\014"));
-    }
 }
