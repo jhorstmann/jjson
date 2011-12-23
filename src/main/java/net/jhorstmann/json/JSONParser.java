@@ -246,4 +246,14 @@ public class JSONParser extends AbstractParser {
                 throw createSyntaxException(ch);
         }
     }
+    
+    public boolean isObject() throws IOException {
+        int ch = peekToken();
+        return nextItemType(ch) == ValueType.OBJECT;
+    }
+    
+    public boolean isArray() throws IOException {
+        int ch = peekToken();
+        return nextItemType(ch) == ValueType.ARRAY;
+    }
 }
