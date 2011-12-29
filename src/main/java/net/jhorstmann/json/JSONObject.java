@@ -145,7 +145,7 @@ public class JSONObject extends LinkedHashMap<String, Object> {
     @Override
     public String toString() {
         try {
-            return JSONWriter.format(this, true);
+            return JSONUtils.format(this, true);
         } catch (IOException ex) {
             throw new RuntimeException(ex.getClass().getSimpleName() + " in " + getClass().getSimpleName() + ".toString()", ex);
         }

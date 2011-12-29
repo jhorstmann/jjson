@@ -51,30 +51,6 @@ public class JSONWriter  {
         return pretty;
     }
     
-    public static String format(Object o) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        new JSONWriter(sb).write(o);
-        return sb.toString();
-    }
-
-    public static String format(Object o, boolean pretty) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        new JSONWriter(sb, pretty).write(o);
-        return sb.toString();
-    }
-
-    public static String formatBean(Object o) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        new JSONWriter(sb).writeBean(o);
-        return sb.toString();
-    }
-
-    public static String formatBean(Object o, boolean pretty) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        new JSONWriter(sb, pretty).writeBean(o);
-        return sb.toString();
-    }
-    
     private void indent(int level) throws IOException {
         if (pretty) {
             for (int i=0; i<level; i++) {

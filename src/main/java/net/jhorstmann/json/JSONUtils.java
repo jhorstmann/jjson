@@ -14,6 +14,30 @@ public class JSONUtils {
     private JSONUtils() {
     }
 
+    public static String format(Object o) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        new JSONWriter(sb).write(o);
+        return sb.toString();
+    }
+
+    public static String format(Object o, boolean pretty) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        new JSONWriter(sb, pretty).write(o);
+        return sb.toString();
+    }
+
+    public static String formatBean(Object o) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        new JSONWriter(sb).writeBean(o);
+        return sb.toString();
+    }
+
+    public static String formatBean(Object o, boolean pretty) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        new JSONWriter(sb, pretty).writeBean(o);
+        return sb.toString();
+    }
+    
     public static void writeChar(char ch, Appendable out) throws IOException {
         switch (ch) {
             case '\b': out.append("\\b"); break;
