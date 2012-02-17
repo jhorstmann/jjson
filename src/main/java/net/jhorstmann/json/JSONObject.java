@@ -111,12 +111,14 @@ public class JSONObject extends LinkedHashMap<String, Object> {
     }
 
     static Date convertDate(String str) {
-        // "yyyy-MM-dd'T'HH:mm:ss'Z'"
-        if (str == null || str.length() != 20) {
-            throw new IllegalArgumentException("Invalid date format");
-        } else if (str.charAt(4) != '-' || str.charAt(7) != '-' || str.charAt(10) != 'T' || str.charAt(13) != ':' || str.charAt(16) != ':' || str.charAt(19) != 'Z') {
-            throw new IllegalArgumentException("Invalid date format");
-        } else {
+        if (str == null) {
+            throw new IllegalArgumentException("Date string is null");
+        } else if (str.startsWith("/Date(") && str.endsWith(")/")) {
+            // ASP.net \/Date(123456)\/
+            long millis = Long.parseLong(str.substring(6, str.length()-2));
+            return new Date(millis);
+        } else if (str.length() == 20 && str.charAt(4) == '-' && str.charAt(7) == '-' && str.charAt(10) == 'T' && str.charAt(13) == ':' && str.charAt(16) == ':' && str.charAt(19) == 'Z') {
+            // ISO 8601 timestamp "yyyy-MM-dd'T'HH:mm:ss'Z'"
             int  year  = Integer.parseInt(str.substring( 0,  4));
             int  month = Integer.parseInt(str.substring( 5,  7));
             int  day   = Integer.parseInt(str.substring( 8, 10));
@@ -134,6 +136,8 @@ public class JSONObject extends LinkedHashMap<String, Object> {
             cal.set(Calendar.MILLISECOND, 0);
 
             return cal.getTime();
+        } else {
+            throw new IllegalArgumentException("Invalid date format");
         }
     }
 
