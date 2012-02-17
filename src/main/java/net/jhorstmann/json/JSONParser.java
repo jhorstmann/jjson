@@ -26,6 +26,7 @@ public class JSONParser extends AbstractParser {
     }
 
     private boolean lenient;
+    private boolean parseNullSingleton;
 
     public JSONParser(String str) {
         this(new StringReader(str));
@@ -37,6 +38,7 @@ public class JSONParser extends AbstractParser {
 
     public JSONParser(Reader reader) {
         super(reader);
+        parseNullSingleton = true;
     }
 
     public JSONParser(CharSequence cs) {
@@ -49,6 +51,14 @@ public class JSONParser extends AbstractParser {
 
     public void setLenient(boolean lenient) {
         this.lenient = lenient;
+    }
+
+    public boolean isParseNullSingleton() {
+        return parseNullSingleton;
+    }
+
+    public void setParseNullSingleton(boolean parseNullSingleton) {
+        this.parseNullSingleton = parseNullSingleton;
     }
 
     public Object parse() throws IOException {
@@ -69,9 +79,10 @@ public class JSONParser extends AbstractParser {
 
     private Object parseAtom(int ch) throws IOException {
         switch (ch) {
-            case 'f': consume("false"); return Boolean.FALSE;
-            case 't': consume("true");  return Boolean.TRUE;
-            case 'n': consume("null");  return JSONNull.INSTANCE;
+            case 'n':
+                return parseNull();
+            case 'f': case 't':
+                return parseBoolean(ch);
             case '+': case '-':
                 return parseSignedDecimal(ch);
             case '0': case '1': case '2': case '3': case '4':
@@ -95,9 +106,8 @@ public class JSONParser extends AbstractParser {
             return parseAtom(ch);
         }
     }
-
-    public Boolean parseBoolean() throws IOException {
-        int ch = peekToken();
+    
+    private Boolean parseBoolean(int ch) throws IOException {
         if (ch == 't') {
             consume("true");
             return true;
@@ -109,9 +119,14 @@ public class JSONParser extends AbstractParser {
         }
     }
 
+    public Boolean parseBoolean() throws IOException {
+        int ch = peekToken();
+        return parseBoolean(ch);
+    }
+
     public JSONNull parseNull() throws IOException {
         consume("null");
-        return JSONNull.INSTANCE;
+        return parseNullSingleton ? JSONNull.INSTANCE : null;
     }
 
     public BigDecimal parseBigDecimal() throws IOException {
