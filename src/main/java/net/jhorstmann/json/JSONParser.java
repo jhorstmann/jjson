@@ -18,11 +18,34 @@ public class JSONParser extends AbstractParser {
     }
     
     public interface ArrayCallback {
+        void beginArray() throws IOException;
+        void endArray() throws IOException;
         void item(JSONParser parser, int idx, ValueType type) throws IOException;
     }
 
+    public static abstract class AbstractArrayCallback implements ArrayCallback {
+
+        public void beginArray() throws IOException {
+        }
+
+        public void endArray() throws IOException {
+        }
+    }
+
     public interface ObjectCallback {
+        void beginObject() throws IOException;
+        void endObject() throws IOException;
         void property(JSONParser parser, String property, ValueType type) throws IOException;
+    }
+
+    public static abstract class AbstractObjectCallback implements ObjectCallback {
+
+        public void beginObject() throws IOException {
+        }
+
+        public void endObject() throws IOException {
+        }
+
     }
 
     private boolean lenient;
@@ -170,7 +193,7 @@ public class JSONParser extends AbstractParser {
 
     private JSONObject parseObjectImpl() throws IOException {
         final JSONObject result = new JSONObject();
-        parseObject(new ObjectCallback() {
+        parseObject(new AbstractObjectCallback() {
             public void property(JSONParser parser, String property, ValueType type) throws IOException {
                 Object value = parser.parseValue();
                 result.put(property, value);
@@ -209,9 +232,11 @@ public class JSONParser extends AbstractParser {
     
     public void parseObject(ObjectCallback cb) throws IOException {
         consume('{');
+        cb.beginObject();
         int ch = peekToken();
         if (ch == '}') {
             consume();
+            cb.endObject();
         } else {
             if (lenient) {
                 while (true) {
@@ -241,6 +266,7 @@ public class JSONParser extends AbstractParser {
                         ch = peekToken();
                         if (ch == '}') {
                             consume();
+                            cb.endObject();
                             break;
                         }
                         else if (ch == ',' || ch == ';') {
@@ -265,6 +291,7 @@ public class JSONParser extends AbstractParser {
                         ch = peekToken();
                         if (ch == '}') {
                             consume();
+                            cb.endObject();
                             break;
                         }
                         else if (ch == ',') {
@@ -290,7 +317,7 @@ public class JSONParser extends AbstractParser {
     
     private List parseArrayImpl() throws IOException {
         final List result = new ArrayList();
-        parseArray(new ArrayCallback() {
+        parseArray(new AbstractArrayCallback() {
             public void item(JSONParser parser, int idx, ValueType type) throws IOException {
                 result.add(parser.parseValue());
             }
@@ -300,11 +327,13 @@ public class JSONParser extends AbstractParser {
 
     public void parseArray(ArrayCallback cb) throws IOException {
         consume('[');
+        cb.beginArray();
         int ch = peekToken();
         int idx = 0;
 
         if (ch == ']') {
             consume();
+            cb.endArray();
         } else {
             while (true) {
                 ValueType type = nextItemType(ch);
@@ -314,6 +343,7 @@ public class JSONParser extends AbstractParser {
                 ch = peekToken();
                 if (ch == ']') {
                     consume();
+                    cb.endArray();
                     break;
                 } else if (ch == ',') {
                     consume();

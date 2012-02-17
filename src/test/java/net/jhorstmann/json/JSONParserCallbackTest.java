@@ -5,10 +5,10 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import junit.framework.Assert;
 import net.jhorstmann.json.JSONParser.ValueType;
 import org.junit.Test;
@@ -17,7 +17,18 @@ public class JSONParserCallbackTest {
     @Test
     public void testParseObject() throws IOException {
         final Map obj = new LinkedHashMap();
+        final AtomicBoolean beginCalled = new AtomicBoolean();
+        final AtomicBoolean endCalled = new AtomicBoolean();
         new JSONParser("{'a': 123.0, 'b': 'test', 'c': false, 'd': null, 'e': {'key': 'value'}, 'f': [true, false]}").parseObject(new JSONParser.ObjectCallback() {
+
+            public void beginObject() throws IOException {
+                beginCalled.set(true);
+            }
+
+            public void endObject() throws IOException {
+                endCalled.set(true);
+            }
+
             public void property(JSONParser parser, String property, ValueType type) throws IOException {
                 if ("a".equals(property)) {
                     Assert.assertEquals(ValueType.NUMBER, type);
@@ -40,6 +51,8 @@ public class JSONParserCallbackTest {
                 }
             }
         });
+        Assert.assertTrue(beginCalled.get());
+        Assert.assertTrue(endCalled.get());
         Assert.assertEquals(6, obj.size());
         Assert.assertEquals(new BigDecimal("123.0"), obj.get("a"));
         Assert.assertEquals("test", obj.get("b"));
@@ -53,7 +66,17 @@ public class JSONParserCallbackTest {
     public void testParseArray() throws IOException {
         final List expected = Arrays.asList(123.0, "test", true, JSONNull.INSTANCE, Collections.singletonMap("key", "value"), Arrays.asList(true, false));
         final List list = new ArrayList(6);
+        final AtomicBoolean beginCalled = new AtomicBoolean();
+        final AtomicBoolean endCalled = new AtomicBoolean();
         new JSONParser("[123.0, 'test', true, null, {'key': 'value'}, [true, false]]").parseArray(new JSONParser.ArrayCallback() {
+
+            public void beginArray() throws IOException {
+                beginCalled.set(true);
+            }
+
+            public void endArray() throws IOException {
+                endCalled.set(true);
+            }
 
             public void item(JSONParser parser, int idx, ValueType type) throws IOException {
                 switch (idx) {
@@ -86,6 +109,8 @@ public class JSONParserCallbackTest {
                 }
             }
         });
+        Assert.assertTrue(beginCalled.get());
+        Assert.assertTrue(endCalled.get());
         Assert.assertEquals(expected, list);
     }
 }

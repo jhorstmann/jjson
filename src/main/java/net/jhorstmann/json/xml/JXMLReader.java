@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Locale;
 import net.jhorstmann.json.JSONParser;
+import net.jhorstmann.json.JSONParser.AbstractArrayCallback;
+import net.jhorstmann.json.JSONParser.AbstractObjectCallback;
 import net.jhorstmann.json.JSONParser.ArrayCallback;
 import net.jhorstmann.json.JSONParser.ObjectCallback;
 import net.jhorstmann.json.JSONParser.ValueType;
@@ -138,7 +140,7 @@ public class JXMLReader extends AbstractXMLReader {
         }
     }
 
-    static class ObjectCallbackImpl implements ObjectCallback {
+    static class ObjectCallbackImpl extends AbstractObjectCallback {
 
         private JXMLReader reader;
 
@@ -160,7 +162,7 @@ public class JXMLReader extends AbstractXMLReader {
         }
     }
 
-    static class ArrayCallbackImpl implements ArrayCallback {
+    static class ArrayCallbackImpl extends AbstractArrayCallback {
 
         private JXMLReader reader;
 
@@ -176,6 +178,4 @@ public class JXMLReader extends AbstractXMLReader {
             }
         }
     }
-
-
 }
