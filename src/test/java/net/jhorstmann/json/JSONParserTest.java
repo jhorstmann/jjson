@@ -250,7 +250,7 @@ public class JSONParserTest {
         df.setTimeZone(TimeZone.getTimeZone("UTC"));
         String str = df.format(date);
 
-        assertEquals(date, JSONObject.convertDate(str));
+        assertEquals(date, JSONConversion.convertDate(str));
 
         String json = "{'date': '" + str.replaceAll("'", "\\'") + "'}";
 

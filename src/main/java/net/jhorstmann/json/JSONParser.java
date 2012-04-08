@@ -8,8 +8,6 @@ import java.io.StringReader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
 
 public class JSONParser extends AbstractParser {
     
@@ -310,13 +308,13 @@ public class JSONParser extends AbstractParser {
         }
     }
 
-    public List parseArray() throws IOException {
+    public JSONArray parseArray() throws IOException {
         peekToken();
         return parseArrayImpl();
     }
     
-    private List parseArrayImpl() throws IOException {
-        final List result = new ArrayList();
+    private JSONArray parseArrayImpl() throws IOException {
+        final JSONArray result = new JSONArray();
         parseArray(new AbstractArrayCallback() {
             public void item(JSONParser parser, int idx, ValueType type) throws IOException {
                 result.add(parser.parseValue());
