@@ -20,4 +20,8 @@ public class JSONArray extends ArrayList {
     public ListIterator listIterator(int index) {
         return new JSONListIterator(super.listIterator(index));
     }
+
+    public JSONListIterator jsonListIterator() {
+        return new JSONListIterator(super.listIterator());
+    }
 }
