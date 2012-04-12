@@ -1,5 +1,6 @@
 package net.jhorstmann.json;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.ListIterator;
@@ -23,5 +24,18 @@ public class JSONArray extends ArrayList {
 
     public JSONListIterator jsonListIterator() {
         return new JSONListIterator(super.listIterator());
+    }
+
+    @Override
+    public String toString() {
+        return toString(false);
+    }
+
+    public String toString(boolean pretty) {
+        try {
+            return JSONUtils.format(this, pretty);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex.getClass().getSimpleName() + " in " + getClass().getSimpleName() + ".toString()", ex);
+        }
     }
 }

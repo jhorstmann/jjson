@@ -20,4 +20,12 @@ public class JSONArrayTest {
         assertFalse(iter.hasNext());
     }
 
+    @Test
+    public void testToString() {
+        JSONArray arr = new JSONArray();
+        arr.add(1.0);
+        arr.add("abc");
+        assertEquals("[1.0,\"abc\"]", arr.toString());
+    }
+
 }

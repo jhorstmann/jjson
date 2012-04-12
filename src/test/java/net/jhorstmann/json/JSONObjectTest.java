@@ -29,4 +29,12 @@ public class JSONObjectTest {
         json.put("date", "/Date(" + now.getTime() + ")/");
         assertEquals(now, json.getDate("date"));
     }
+
+    @Test
+    public void testToString() {
+        JSONObject json = new JSONObject();
+        json.put("a", 1.0);
+        json.put("b", "xyz");
+        assertEquals("{\"a\":1.0,\"b\":\"xyz\"}", json.toString());
+    }
 }

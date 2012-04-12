@@ -58,8 +58,12 @@ public class JSONObject extends LinkedHashMap<String, Object> {
 
     @Override
     public String toString() {
+        return toString(false);
+    }
+
+    public String toString(boolean pretty) {
         try {
-            return JSONUtils.format(this, true);
+            return JSONUtils.format(this, pretty);
         } catch (IOException ex) {
             throw new RuntimeException(ex.getClass().getSimpleName() + " in " + getClass().getSimpleName() + ".toString()", ex);
         }
