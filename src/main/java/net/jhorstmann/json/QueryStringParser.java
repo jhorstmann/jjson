@@ -27,18 +27,18 @@ public class QueryStringParser extends AbstractParser {
 
     private void parseImpl(ObjectBuilder builder) throws IOException {
         while (true) {
-            int ch = peek();
+            int ch = peekChar();
             if (ch == -1) {
                 break;
             }
             parseEntry(builder, ch);
 
-            int ch2 = peek();
+            int ch2 = peekChar();
 
             if (ch2 == -1) {
                 break;
             } else if (ch2 == '&') {
-                next();
+                nextChar();
             } else {
                 throw createSyntaxException(ch2);
             }
@@ -46,18 +46,18 @@ public class QueryStringParser extends AbstractParser {
     }
 
     private void parseValue(ObjectBuilder builder, String key) throws IOException {
-        int ch = peek();
+        int ch = peekChar();
         builder.put(key, parseStringValue(ch));
     }
 
     private void parseValue(ListBuilder builder, int key) throws IOException {
-        int ch = peek();
+        int ch = peekChar();
         builder.set(key, parseStringValue(ch));
     }
 
     private void parseEntry(ObjectBuilder builder, int ch) throws IOException {
         String key = parseStringKey(ch);
-        int ch2 = peek();
+        int ch2 = peekChar();
         parseProperty(builder, key, ch2);
     }
 
@@ -66,12 +66,12 @@ public class QueryStringParser extends AbstractParser {
         if (ch2 == -1 || ch2 == '&') {
             builder.propertyTrue(key);
         } else if (ch2 == '=') {
-            next();
+            nextChar();
             parseValue(builder, key);
         } else if (ch2 == '.') {
-            next();
+            nextChar();
             ObjectBuilder object = builder.object(key);
-            int ch3 = peek();
+            int ch3 = peekChar();
             parseEntry(object, ch3);
         /*} else if (ch2 == '(') {
             next();
@@ -103,21 +103,21 @@ public class QueryStringParser extends AbstractParser {
         consume('[');
         int idx;
 
-        int ch = peek();
+        int ch = peekChar();
         if (ch == ']') {
             idx = list.size();
         } else {
             idx = parseIndex(ch);
         }
         consume(']');
-        int ch2 = peek();
+        int ch2 = peekChar();
         if (ch2 == '=') {
-            next();
+            nextChar();
             parseValue(list, idx);
         } else if (ch2 == '.') {
-            next();
+            nextChar();
             ObjectBuilder object = list.object(idx);
-            int ch3 = peek();
+            int ch3 = peekChar();
             parseEntry(object, ch3);
         } else if (ch2 == '[') {
             ListBuilder nestedList = list.list(idx);
@@ -132,16 +132,16 @@ public class QueryStringParser extends AbstractParser {
     private int parseIndex(int ch) throws IOException {
         int res = 0;
         if (ch >= '0' && ch <= '9') {
-            next();
+            nextChar();
             res = ch - '0';
             while (true) {
-                int ch2 = peek();
+                int ch2 = peekChar();
                 if (ch2 >= '0' && ch2 <= '9') {
                     res = res*10 + ch2 - '0';
                     if (res > MAX_INDEX) {
                         throw createSyntaxException("Index " + res + (char)ch2 + " too large");
                     }
-                    next();
+                    nextChar();
                 } else {
                     break;
                 }
@@ -156,7 +156,7 @@ public class QueryStringParser extends AbstractParser {
     private int parseEscapedOctet() throws IOException {
         int num = 0;
         for (int i = 0; i < 2; i++) {
-            int ch = peek();
+            int ch = peekChar();
             if (ch >= '0' && ch <= '9') {
                 consume();
                 num = num * 16 + (ch - '0');
@@ -176,17 +176,17 @@ public class QueryStringParser extends AbstractParser {
     private String parseEscape() throws IOException {
         consume('%');
         int b1 = parseEscapedOctet();
-        int ch2 = peek();
+        int ch2 = peekChar();
         if (ch2 == '%') {
             consume();
             ByteArrayOutputStream baos = new ByteArrayOutputStream(8);
             baos.write(b1);
             baos.write(parseEscapedOctet());
-            int ch3 = peek();
+            int ch3 = peekChar();
             while (ch3 == '%') {
                 consume();
                 baos.write(parseEscapedOctet());
-                ch3 = peek();
+                ch3 = peekChar();
             }
             return baos.toString("UTF-8");
         } else {
@@ -203,10 +203,10 @@ public class QueryStringParser extends AbstractParser {
             } else if (ch == '%') {
                 sb.append(parseEscape());
             } else {
-                next();
+                nextChar();
                 sb.appendCodePoint(ch);
             }
-            ch = peek();
+            ch = peekChar();
         }
 
         return sb.toString();

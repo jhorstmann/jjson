@@ -60,9 +60,9 @@ public class CSVParser extends AbstractParser {
             } else if (ch == '\r' || ch == '\n') {
                 break;
             } else {
-                next();
+                nextChar();
                 sb.append((char) ch);
-                ch = peek();
+                ch = peekChar();
             }
         }
         return sb.toString();
@@ -72,12 +72,12 @@ public class CSVParser extends AbstractParser {
         consume(quote);
         StringBuilder sb = new StringBuilder();
         while (true) {
-            int ch = peek();
+            int ch = peekChar();
             if (ch == quote) {
-                next();
-                int ch2 = peek();
+                nextChar();
+                int ch2 = peekChar();
                 if (ch2 == quote) {
-                    next();
+                    nextChar();
                     sb.append((char)quote);
                 } else {
                     break;
@@ -94,8 +94,8 @@ public class CSVParser extends AbstractParser {
     
     private void skipOptionalWhitespace(int ch) throws IOException {
         while (ch == '\t' || ch == ' ') {
-            next();
-            ch = peek();
+            nextChar();
+            ch = peekChar();
         }
     }
 
@@ -104,11 +104,11 @@ public class CSVParser extends AbstractParser {
         Object res;
         if (ch == '"' || ch == '\'') {
             res = parseString(ch);
-            int ch2 = peek();
+            int ch2 = peekChar();
             skipOptionalWhitespace(ch2);
         } else if (parseNumbers && isNumberStart(ch)) {
             res = parseSignedDecimal(ch);
-            int ch2 = peek();
+            int ch2 = peekChar();
             skipOptionalWhitespace(ch2);
         } else {
             String str = parseBareString(ch).trim();
@@ -120,22 +120,22 @@ public class CSVParser extends AbstractParser {
     private List<Object> parseLine(boolean parseNumbers) throws IOException {
         List<Object> result = new LinkedList<Object>();
         while (true) {
-            int ch = peek();
+            int ch = peekChar();
             if (ch == -1) {
                 break;
             } else if (ch == '\r') {
-                next();
-                int ch2 = peek();
+                nextChar();
+                int ch2 = peekChar();
                 if (ch2 == '\n') {
-                    next();
+                    nextChar();
                 }
             } else if (ch == '\n') {
-                next();
+                nextChar();
                 break;
             } else if (ch == '\t' || ch == ' ') {
-                next();
+                nextChar();
             } else if (ch == delimiter) {
-                next();
+                nextChar();
             } else {
                 result.add(parseValue(ch, parseNumbers));
             }
@@ -145,7 +145,7 @@ public class CSVParser extends AbstractParser {
 
     public void parseLines(LineCallback callback) throws IOException {
         while (true) {
-            int ch = peek();
+            int ch = peekChar();
             if (ch == -1) {
                 break;
             } else {

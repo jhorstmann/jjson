@@ -217,9 +217,9 @@ public class JSONParser extends AbstractParser {
         StringBuilder sb = new StringBuilder();
         sb.append((char)ch);
         while (true) {
-            ch = peek();
+            ch = peekChar();
             if (isIdentifierPart(ch)) {
-                next();
+                nextChar();
                 sb.append((char)ch);
             } else {
                 break;
@@ -250,10 +250,10 @@ public class JSONParser extends AbstractParser {
                         if (ch == ':') {
                             consume();
                         } else if (ch == '=') {
-                            next();
-                            ch = peek();
+                            nextChar();
+                            ch = peekChar();
                             if (ch == '>') {
-                                next();
+                                nextChar();
                             }
                         }
 

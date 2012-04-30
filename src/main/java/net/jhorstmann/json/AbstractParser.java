@@ -37,7 +37,7 @@ public abstract class AbstractParser {
         return reader.read();
     }
 
-    protected final int next() throws IOException {
+    protected final int nextChar() throws IOException {
         if (la1 == -1) {
             int ch = readChar();
             if (ch == '\n') {
@@ -55,7 +55,7 @@ public abstract class AbstractParser {
         }
     }
 
-    protected final int peek() throws IOException {
+    protected final int peekChar() throws IOException {
         if (la1 == -1) {
             return la1 = readChar();
         }
@@ -68,7 +68,7 @@ public abstract class AbstractParser {
         int ch;
 
         do {
-            ch = next();
+            ch = nextChar();
         }
         while (isWhitespace(ch));
 
@@ -100,11 +100,11 @@ public abstract class AbstractParser {
     }
 
     protected final void consume() throws IOException {
-        next();
+        nextChar();
     }
 
     protected final void consume(int expected) throws IOException {
-        int ch = next();
+        int ch = nextChar();
         if (ch != expected) {
             throw createSyntaxException(ch, expected);
         }
@@ -183,9 +183,9 @@ public abstract class AbstractParser {
 
     private void parseNumber(StringBuffer sb, int ch) throws IOException {
         if (ch == '-' || ch == '+') {
-            next();
+            nextChar();
             sb.append((char)ch);
-            int ch2 = peek();
+            int ch2 = peekChar();
             parseUnsignedNumber(sb, ch2);
         } else {
             parseUnsignedNumber(sb, ch);
@@ -194,27 +194,27 @@ public abstract class AbstractParser {
 
     private void parseUnsignedNumber(StringBuffer sb, int ch) throws IOException {
         parseInt(sb, ch);
-        int ch2 = peek();
+        int ch2 = peekChar();
         // optional Fraction
         if (ch2 == '.') {
             sb.append('.');
             consume();
-            int ch3 = peek();
+            int ch3 = peekChar();
             parseDigits(sb, ch3);
 
-            ch2 = peek();
+            ch2 = peekChar();
         }
 
         // optional exponent
         if (ch2 == 'e' || ch2 == 'E') {
             sb.append('e');
             consume();
-            int ch3 = peek();
+            int ch3 = peekChar();
             if (ch3 == '-' || ch3 == '+') {
                 consume();
                 sb.append((char)ch3);
 
-                ch3 = peek();
+                ch3 = peekChar();
             }
             parseDigits(sb, ch3);
         }
@@ -238,7 +238,7 @@ public abstract class AbstractParser {
             consume();
             sb.append((char)ch);
             while (true) {
-                int ch2 = peek();
+                int ch2 = peekChar();
                 if (ch2 >= '0' && ch2 <= '9') {
                     consume();
                     sb.append((char)ch2);
@@ -254,7 +254,7 @@ public abstract class AbstractParser {
         consume(quote);
         StringBuilder sb = new StringBuilder();
         while (true) {
-            int ch = peek();
+            int ch = peekChar();
             if (ch == '\\') {
                 sb.append((char)parseEscape());
             } else if (ch == quote) {
@@ -272,7 +272,7 @@ public abstract class AbstractParser {
 
     private int parseEscape() throws IOException {
         consume('\\');
-        int ch = next();
+        int ch = nextChar();
         switch (ch) {
             case '"' : return '"';
             case '\'': return '\'';
@@ -291,7 +291,7 @@ public abstract class AbstractParser {
     private int parseCodepoint() throws IOException {
         int num = 0;
         for (int i=0; i<4; i++) {
-            int ch = peek();
+            int ch = peekChar();
             if (ch >= '0' && ch <= '9') {
                 consume();
                 num = num * 16 + (ch-'0');
