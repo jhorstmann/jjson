@@ -149,16 +149,16 @@ public class JSONEventParser extends AbstractParser implements Iterator<JSONEven
         return ch != -1;
     }
 
-    public String getString() throws IOException {
+    public String getString() {
         if (currentString == null) {
-            throw new JSONSyntaxException(null);
+            throw new IllegalStateException("No current string value");
         }
         return currentString;
     }
 
-    public Double getNumber() throws IOException {
+    public Double getNumber() {
         if (currentNumber == null) {
-            throw new JSONSyntaxException("");
+            throw new IllegalStateException("No current number value");
         }
         return currentNumber;
     }
