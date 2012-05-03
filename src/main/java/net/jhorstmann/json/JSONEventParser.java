@@ -168,7 +168,7 @@ public class JSONEventParser extends AbstractParser implements Iterator<JSONEven
             return hasNextEvent();
         } catch (IOException ex) {
             NoSuchElementException ex2 = new NoSuchElementException(ex.getMessage());
-            ex2.initCause(ex2);
+            ex2.initCause(ex);
             throw ex2;
         }
     }
@@ -178,7 +178,7 @@ public class JSONEventParser extends AbstractParser implements Iterator<JSONEven
             return nextEvent();
         } catch (IOException ex) {
             NoSuchElementException ex2 = new NoSuchElementException(ex.getMessage());
-            ex2.initCause(ex2);
+            ex2.initCause(ex);
             throw ex2;
         }
     }
